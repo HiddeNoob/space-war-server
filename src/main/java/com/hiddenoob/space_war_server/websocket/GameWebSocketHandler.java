@@ -1,5 +1,7 @@
 package com.hiddenoob.space_war_server.websocket;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -13,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class GameWebSocketHandler extends TextWebSocketHandler {
-
+    private static final Logger logger = LoggerFactory.getLogger(GameWebSocketHandler.class);
     private final Map<String, ConcurrentWebSocketSessionDecorator> sessions = new ConcurrentHashMap<>();
 
     @Override
@@ -23,12 +25,14 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         );
         sessions.put(session.getId(), safeSession);
         safeSession.sendMessage(new TextMessage("Welcome!"));
+        logger.info("{} connected as {}",session.getRemoteAddress(),session.getId());
         broadcastMessage(session.getId() + " joined the game");
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         sessions.remove(session.getId()); 
+        logger.info("{} left from server",session.getId());
     }
 
     public void broadcastMessage(String message) {

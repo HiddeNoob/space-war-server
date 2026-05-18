@@ -2,6 +2,8 @@ package com.hiddenoob.space_war_server.server;
 
 import java.time.Instant;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -10,7 +12,8 @@ import com.hiddenoob.space_war_server.websocket.GameWebSocketHandler;
 
 @Component
 public class Game {
-
+    
+    private static final Logger logger = LoggerFactory.getLogger(Game.class);
     private final GameWebSocketHandler gameWebSocketHandler;
     private long tickRate = 1000 / 1; // 64 tick per second
     public Game(GameWebSocketHandler gameWebSocketHandler) {
@@ -19,7 +22,7 @@ public class Game {
 
     @Async
     public void start() {
-
+        logger.info("Game started");
         while (true) {
             long startTime = System.currentTimeMillis();
 
