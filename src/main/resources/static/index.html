@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space War Client</title>
+    <style>
+        body { margin: 0; background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        canvas { border: 2px solid #333; background: #050505; }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const socket = new WebSocket(`ws://${window.location.host}/ws/game`);
+
+        socket.onopen = () => console.log("Sunucuya bağlandı.");
+        socket.onmessage = (event) => {
+            console.log("Veri alındı:", event.data);
+        };
+    </script>
+</body>
+</html>
