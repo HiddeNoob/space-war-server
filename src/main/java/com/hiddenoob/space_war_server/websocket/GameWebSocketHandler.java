@@ -13,6 +13,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import com.hiddenoob.space_war_server.GameObjects.Player;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -20,13 +21,20 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GameWebSocketHandler extends TextWebSocketHandler {
     private static final Logger logger = LoggerFactory.getLogger(GameWebSocketHandler.class);
     private final Map<String, Player> sessions = new ConcurrentHashMap<>();
+    private final com.hiddenoob.space_war_server.server.Map gameMap;
+
+    GameWebSocketHandler(com.hiddenoob.space_war_server.server.Map gameMap){
+        this.gameMap = gameMap;
+    }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         WebSocketSession safeSession = new ConcurrentWebSocketSessionDecorator(
             session, 1000, 64 * 1024
         );
-        sessions.put(session.getId(), new Player(safeSession));
+        Player newPlayer = new Player(safeSession);
+        sessions.put(session.getId(), newPlayer);
+        gameMap.addObject(newPlayer);
         safeSession.sendMessage(new TextMessage("Welcome!"));
         logger.info("{} connected as {}",session.getRemoteAddress(),session.getId());
         broadcastMessage(session.getId() + " joined the game");
@@ -49,4 +57,9 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
             }
         }
     }
+
+    public Map<String, Player> getSessions() {
+        return Collections.unmodifiableMap(this.sessions);
+    }
+
 }

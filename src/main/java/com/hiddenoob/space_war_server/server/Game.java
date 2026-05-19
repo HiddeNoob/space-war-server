@@ -1,10 +1,16 @@
 package com.hiddenoob.space_war_server.server;
 
+import java.io.IOException;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.TextMessage;
 
+import com.hiddenoob.Math.Vector2;
+import com.hiddenoob.space_war_server.GameObjects.Astreoid;
 import com.hiddenoob.space_war_server.websocket.GameWebSocketHandler;
 
 
@@ -12,18 +18,42 @@ import com.hiddenoob.space_war_server.websocket.GameWebSocketHandler;
 public class Game implements SmartLifecycle {
     
     private static final Logger logger = LoggerFactory.getLogger(Game.class);
-    private final GameWebSocketHandler gameWebSocketHandler;
+
+
     private long tickRate = 1000 / 1; // 64 tick per second
     private volatile boolean isRunning = false; 
-    public Game(GameWebSocketHandler gameWebSocketHandler) {
-        this.gameWebSocketHandler = gameWebSocketHandler;
+    private Map gameMap;
+    private GameWebSocketHandler socketHandler;
+
+
+    Game(Map map,GameWebSocketHandler socketHandler){
+        this.gameMap = map;
+        this.socketHandler = socketHandler;
     }
+
 
     public void startLoop() {
         while (this.isRunning && !Thread.currentThread().isInterrupted()) {
             long startTime = System.currentTimeMillis();
 
-            gameWebSocketHandler.broadcastMessage("startTime: " + startTime);
+
+            // test için.
+            socketHandler.getSessions().forEach((id, player) -> {
+                Vector2 pos = player.getPosition();
+                List<Astreoid> nearAstreoids = gameMap.queryRange(pos.x - 20,pos.x + 20,pos.y - 20,pos.y + 20);
+                nearAstreoids.forEach((entity -> 
+                    {
+                        try {
+                            player.getSession().sendMessage(
+                                new TextMessage(entity.getShape().toDTO().serialize())
+                            );
+                        } catch (IOException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                    }
+                ));
+            });
 
             long elapsed = System.currentTimeMillis() - startTime;
             long sleepTime = tickRate - elapsed;

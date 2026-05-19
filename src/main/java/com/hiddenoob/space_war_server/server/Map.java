@@ -1,6 +1,7 @@
 package com.hiddenoob.space_war_server.server;
 
 import org.locationtech.jts.index.quadtree.Quadtree;
+import org.springframework.stereotype.Service;
 
 import com.hiddenoob.space_war_server.GameObjects.Astreoid;
 
@@ -8,6 +9,7 @@ import java.util.List;
 
 import org.locationtech.jts.geom.Envelope;
 
+@Service
 public class Map {
     private final Quadtree map = new Quadtree();
 
@@ -23,5 +25,14 @@ public class Map {
         Envelope env = new Envelope(minX, maxX, minY, maxY);
         List<Astreoid> query = map.query(env);
         return query;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Astreoid> getAll(){
+        return map.queryAll();
+    }    
+
+    public void removeObject(Astreoid e) {
+        this.map.remove(new Envelope(e.getPosition().x, e.getPosition().x, e.getPosition().y, e.getPosition().y),e);
     }
 }

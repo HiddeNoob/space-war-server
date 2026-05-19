@@ -23,6 +23,15 @@ public class BreakableLine extends Line {
         health -= damage / durability;
     }
 
+    public void setDurability(int durability) {
+        this.durability = durability;
+    }
+
+    public void setHealth(int health) {
+        this.health = Math.min(health, maxHealth);
+    }
+
+
     public int getHealth() { return health; }
 
     public BreakableLine copy() { return new BreakableLine(a, b); }
