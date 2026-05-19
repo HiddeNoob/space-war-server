@@ -5,18 +5,18 @@ import java.util.List;
 
 import com.hiddenoob.Math.Vector2;
 import com.hiddenoob.Math.Lines.BreakableLine;
-import com.hiddenoob.Math.Polygons.ConcavePolygon;
+import com.hiddenoob.Math.Polygons.Polygon;
 import com.hiddenoob.Math.Polygons.PolygonBuilder;
 
 public class Astreoid {
     private final PhysicsBody physics;
-    private ConcavePolygon<BreakableLine> shape;
+    private Polygon<BreakableLine> shape;
 
     public Astreoid() {
         this(new Vector2());
     }
 
-    public Astreoid(PhysicsBody body, ConcavePolygon<BreakableLine> shape){
+    public Astreoid(PhysicsBody body, Polygon<BreakableLine> shape){
         this.setShape(shape);
         this.physics = body;
     }
@@ -38,16 +38,16 @@ public class Astreoid {
         return physics.getPosition();
     }
 
-    public ConcavePolygon<BreakableLine> getShape() {
+    public Polygon<BreakableLine> getShape() {
         return shape;
     }
 
-    public void setShape(ConcavePolygon<BreakableLine> shape, int lineDurability) {
+    public void setShape(Polygon<BreakableLine> shape, int lineDurability) {
         this.shape = shape;
         this.shape.getLines().forEach(l -> l.setDurability(lineDurability));
     }
 
-    public void setShape(ConcavePolygon<BreakableLine> shape) {
+    public void setShape(Polygon<BreakableLine> shape) {
         setShape(shape, 1);
     }
 

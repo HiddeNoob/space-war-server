@@ -1,18 +1,18 @@
 package com.hiddenoob.Math.Polygons;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import com.hiddenoob.Math.Lines.Line;
-import com.hiddenoob.space_war_server.DTOs.Polygons.PolygonDTO;
 
-public abstract class Polygon<T extends Line> {
+import java.util.Collections;
 
-    protected ArrayList<T> lines;
+public class Polygon<T extends Line> {
 
-    protected Polygon(ArrayList<T> lines){
+    protected List<T> lines;
+
+    protected Polygon(List<T> lines){
         this.lines = lines;
+        PolygonValidator.validatePolygon(lines); // enforce all polygons to be convex
     }
 
     
@@ -28,9 +28,6 @@ public abstract class Polygon<T extends Line> {
         return lines.size();
     }
 
-    public PolygonDTO toDTO(){
-        return new PolygonDTO(this.getLines().stream().map(Line::toDTO).toList());
-    }
 
 }
 

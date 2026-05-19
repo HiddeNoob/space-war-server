@@ -23,7 +23,7 @@ public class PolygonBuilder<T extends Line> {
 
     
 
-    public ConcavePolygon<T> rectangle(double width, double height) {
+    public Polygon<T> rectangle(double width, double height) {
         double hw = width / 2.0, hh = height / 2.0;
         return fromVertices(List.of(
             new Vector2(-hw, -hh),
@@ -33,7 +33,7 @@ public class PolygonBuilder<T extends Line> {
         ));
     }
 
-    public ConcavePolygon<T> regularPolygon(int sides, double radius) {
+    public Polygon<T> regularPolygon(int sides, double radius) {
         if (sides < 3) throw new IllegalArgumentException("En az 3 kenar gerekli");
         ArrayList<Vector2> vertices = new ArrayList<>();
         double step = 2 * Math.PI / sides;
@@ -43,25 +43,15 @@ public class PolygonBuilder<T extends Line> {
         return fromVertices(vertices);
     }
 
-    public ConcavePolygon<T> star(int points, double outerRadius, double innerRadius) {
-        if (points < 2) throw new IllegalArgumentException("En az 2 köşe gerekli");
-        ArrayList<Vector2> vertices = new ArrayList<>();
-        double step = Math.PI / points;
-        for (int i = 0; i < points * 2; i++) {
-            double r = (i % 2 == 0) ? outerRadius : innerRadius;
-            vertices.add(new Vector2(Math.cos(i * step) * r, Math.sin(i * step) * r));
-        }
-        return fromVertices(vertices);
-    }
 
-    public ConcavePolygon<T> fromVertices(List<Vector2> vertices) {
+    public Polygon<T> fromVertices(List<Vector2> vertices) {
         ArrayList<T> lines = new ArrayList<>();
-        if (vertices == null || vertices.size() < 2) return new ConcavePolygon<>(lines);
+        if (vertices == null || vertices.size() < 2) return new Polygon<>(lines);
         int count = vertices.size();
         for (int i = 0; i < count; i++) {
             lines.add(lineFactory.create(vertices.get(i), vertices.get((i + 1) % count)));
         }
-        return new ConcavePolygon<>(lines);
+        return new Polygon<>(lines);
     }
 
     @FunctionalInterface
