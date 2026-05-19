@@ -1,13 +1,16 @@
 package com.hiddenoob.space_war_server.GameObjects;
 
-import java.net.Socket;
+import org.springframework.web.socket.WebSocketSession;
 
 public class Player extends Attacker {
-    Socket connection;
+    
+    private WebSocketSession session;
 
-    Player(Socket client){
-        this.connection = client;
+    public Player(WebSocketSession client){
+        this.session = client;
     }
+
+    public WebSocketSession getSession(){ return session; }
 
     void shoot(){
         

@@ -2,12 +2,15 @@ package com.hiddenoob.space_war_server.websocket;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorator;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
+
+import com.hiddenoob.space_war_server.GameObjects.Player;
 
 import java.io.IOException;
 import java.util.Map;
@@ -16,14 +19,14 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class GameWebSocketHandler extends TextWebSocketHandler {
     private static final Logger logger = LoggerFactory.getLogger(GameWebSocketHandler.class);
-    private final Map<String, ConcurrentWebSocketSessionDecorator> sessions = new ConcurrentHashMap<>();
+    private final Map<String, Player> sessions = new ConcurrentHashMap<>();
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        ConcurrentWebSocketSessionDecorator safeSession = new ConcurrentWebSocketSessionDecorator(
+        WebSocketSession safeSession = new ConcurrentWebSocketSessionDecorator(
             session, 1000, 64 * 1024
         );
-        sessions.put(session.getId(), safeSession);
+        sessions.put(session.getId(), new Player(safeSession));
         safeSession.sendMessage(new TextMessage("Welcome!"));
         logger.info("{} connected as {}",session.getRemoteAddress(),session.getId());
         broadcastMessage(session.getId() + " joined the game");
@@ -35,13 +38,14 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         logger.info("{} left from server",session.getId());
     }
 
+    @Async
     public void broadcastMessage(String message) {
         TextMessage textMessage = new TextMessage(message);
-        for (ConcurrentWebSocketSessionDecorator session : sessions.values()) {
+        for (Player p : sessions.values()) {
             try {
-                session.sendMessage(textMessage);
+                p.getSession().sendMessage(textMessage);
             } catch (IOException e) {
-                System.err.println("Error: " + e.getMessage());
+                logger.error(e.getMessage());
             }
         }
     }
