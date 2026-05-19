@@ -1,5 +1,7 @@
 package com.hiddenoob.Math;
 
+import com.hiddenoob.space_war_server.DTOs.Vector2DTO;
+
 public class Vector2 {
     public double x;
     public double y;
@@ -19,4 +21,8 @@ public class Vector2 {
 
     @Override
     public Vector2 clone() { return new Vector2(x,y); }
+
+    public Vector2DTO toDTO(){
+        return new Vector2DTO(this);
+    }
 }

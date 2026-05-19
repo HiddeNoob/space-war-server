@@ -1,6 +1,7 @@
 package com.hiddenoob.Math.Lines;
 
 import com.hiddenoob.Math.Vector2;
+import com.hiddenoob.space_war_server.DTOs.Lines.LineDTO;
 
 public class Line {
     protected Vector2 a;
@@ -21,6 +22,10 @@ public class Line {
     @Override
     public Object clone(){
         return new Line(a.clone(),b.clone());
+    }
+
+    public LineDTO toDTO(){
+        return new LineDTO(this);
     }
 }
 

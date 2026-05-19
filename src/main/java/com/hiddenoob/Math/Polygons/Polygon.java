@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.hiddenoob.Math.Lines.Line;
+import com.hiddenoob.space_war_server.DTOs.Polygons.PolygonDTO;
 
 public abstract class Polygon<T extends Line> {
 
@@ -27,7 +28,9 @@ public abstract class Polygon<T extends Line> {
         return lines.size();
     }
 
-
+    public PolygonDTO toDTO(){
+        return new PolygonDTO(this.getLines().stream().map(Line::toDTO).toList());
+    }
 
 }
 
