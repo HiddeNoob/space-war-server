@@ -7,10 +7,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.BinaryMessage;
 
 import com.hiddenoob.Math.Vector2;
 import com.hiddenoob.space_war_server.GameObjects.Astreoid;
+import com.hiddenoob.space_war_server.mapper.PacketMapper;
 import com.hiddenoob.space_war_server.websocket.GameWebSocketHandler;
 
 
@@ -45,7 +46,7 @@ public class Game implements SmartLifecycle {
                     {
                         try {
                             player.getSession().sendMessage(
-                                new TextMessage(entity.getShape().toDTO().serialize())
+                                new BinaryMessage(PacketMapper.toPacket(entity.getShape()).toByteArray())
                             );
                         } catch (IOException e) {
                             // TODO Auto-generated catch block
