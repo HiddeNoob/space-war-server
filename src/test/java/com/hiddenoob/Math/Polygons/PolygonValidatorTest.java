@@ -3,7 +3,6 @@ package com.hiddenoob.Math.Polygons;
 import org.junit.jupiter.api.Test;
 
 import com.hiddenoob.Math.Vector2;
-import com.hiddenoob.Math.Polygons.PolygonBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
