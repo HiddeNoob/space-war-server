@@ -1,7 +1,7 @@
-package com.hiddenoob.space_war_server.GameObjects.WeaponTypes;
+package com.hiddenoob.space_war_server.gameObjects.weaponTypes;
 
 import com.hiddenoob.Math.Polygons.PolygonBuilder;
-import com.hiddenoob.space_war_server.GameObjects.Astreoid;
+import com.hiddenoob.space_war_server.gameObjects.Astreoid;
 
 public class Bullet extends Astreoid {
     

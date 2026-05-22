@@ -1,9 +1,7 @@
-package com.hiddenoob.space_war_server.server;
+package com.hiddenoob.space_war_server.gameObjects;
 
 import org.locationtech.jts.index.quadtree.Quadtree;
 import org.springframework.stereotype.Service;
-
-import com.hiddenoob.space_war_server.GameObjects.Astreoid;
 
 import java.util.List;
 

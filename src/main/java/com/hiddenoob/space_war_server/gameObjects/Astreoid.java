@@ -1,4 +1,4 @@
-package com.hiddenoob.space_war_server.GameObjects;
+package com.hiddenoob.space_war_server.gameObjects;
 
 import java.util.ArrayList;
 import java.util.List;

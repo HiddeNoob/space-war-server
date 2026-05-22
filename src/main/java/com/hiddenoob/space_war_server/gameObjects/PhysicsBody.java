@@ -1,4 +1,4 @@
-package com.hiddenoob.space_war_server.GameObjects;
+package com.hiddenoob.space_war_server.gameObjects;
 
 import com.hiddenoob.Math.Vector2;
 

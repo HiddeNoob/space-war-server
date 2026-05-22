@@ -10,7 +10,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorator;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import com.hiddenoob.space_war_server.GameObjects.Player;
+import com.hiddenoob.space_war_server.gameObjects.Player;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -21,9 +21,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GameWebSocketHandler extends TextWebSocketHandler {
     private static final Logger logger = LoggerFactory.getLogger(GameWebSocketHandler.class);
     private final Map<String, Player> sessions = new ConcurrentHashMap<>();
-    private final com.hiddenoob.space_war_server.server.Map gameMap;
+    private final com.hiddenoob.space_war_server.gameObjects.Map gameMap;
 
-    GameWebSocketHandler(com.hiddenoob.space_war_server.server.Map gameMap){
+    GameWebSocketHandler(com.hiddenoob.space_war_server.gameObjects.Map gameMap){
         this.gameMap = gameMap;
     }
 

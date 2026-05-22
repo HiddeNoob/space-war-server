@@ -10,7 +10,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.BinaryMessage;
 
 import com.hiddenoob.Math.Vector2;
-import com.hiddenoob.space_war_server.GameObjects.Astreoid;
+import com.hiddenoob.space_war_server.gameObjects.Astreoid;
+import com.hiddenoob.space_war_server.gameObjects.Map;
 import com.hiddenoob.space_war_server.mapper.PacketMapper;
 import com.hiddenoob.space_war_server.websocket.GameWebSocketHandler;
 

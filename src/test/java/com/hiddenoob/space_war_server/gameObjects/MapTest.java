@@ -1,7 +1,7 @@
-package com.hiddenoob.space_war_server.server;
+package com.hiddenoob.space_war_server.gameObjects;
 
-import com.hiddenoob.space_war_server.GameObjects.Astreoid;
 import com.hiddenoob.Math.Vector2;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

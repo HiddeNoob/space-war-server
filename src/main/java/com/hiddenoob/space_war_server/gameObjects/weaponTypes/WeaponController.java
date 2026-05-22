@@ -1,4 +1,4 @@
-package com.hiddenoob.space_war_server.GameObjects.WeaponTypes;
+package com.hiddenoob.space_war_server.gameObjects.weaponTypes;
 
 import java.util.List;
 
