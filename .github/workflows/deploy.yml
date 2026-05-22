@@ -16,7 +16,7 @@ jobs:
       with:
         latest: true
         fileName: "*.jar" # Sadece JAR uzantılı dosyayı çeker
-        out-file: "target" # İndirilen dosyayı 'target' klasörüne koyar
+        out-file-path: "target" # İndirilen dosyayı 'target' klasörüne koyar
 
     # 2. Adım: İndirilen hazır JAR dosyasını sunucuya transfer eder (SCP)
     - name: Copy Ready JAR file to Remote Server via SCP
