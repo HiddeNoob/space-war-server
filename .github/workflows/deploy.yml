@@ -1,0 +1,43 @@
+name: Deploy
+
+on:
+  repository_dispatch:
+    types: [trigger-deployment] # release.yml tarafından tetiklenir
+  workflow_dispatch: # githubdan da tetiklenebilir
+
+jobs:
+  deploy-to-server:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Adım: GitHub'da en son yayınlanan (latest) Release altındaki JAR dosyasını indirir
+    - name: Download Latest JAR from GitHub Release
+      uses: robinraju/release-downloader@v1.11
+      with:
+        latest: true
+        fileName: "*.jar" # Sadece JAR uzantılı dosyayı çeker
+        out-file: "target" # İndirilen dosyayı 'target' klasörüne koyar
+
+    # 2. Adım: İndirilen hazır JAR dosyasını sunucuya transfer eder (SCP)
+    - name: Copy Ready JAR file to Remote Server via SCP
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: 22
+        source: "target/*.jar"
+        target: "/var/www/my-app/incoming"
+        strip_components: 1
+
+    # 3. Adım: Sunucudaki scripti tetikleyerek uygulamayı yeniden başlatır
+    - name: Execute Deployment Script on Server
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: 22
+        script: |
+          cd /var/www/my-app
+          ./deploy.sh
