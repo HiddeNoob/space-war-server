@@ -12,8 +12,8 @@ import org.springframework.web.socket.BinaryMessage;
 import com.hiddenoob.Math.Vector2;
 import com.hiddenoob.space_war_server.gameObjects.Astreoid;
 import com.hiddenoob.space_war_server.gameObjects.Map;
+import com.hiddenoob.space_war_server.gameObjects.Player;
 import com.hiddenoob.space_war_server.mapper.PacketMapper;
-import com.hiddenoob.space_war_server.websocket.GameWebSocketHandler;
 
 
 @Component
@@ -95,4 +95,17 @@ public class Game implements SmartLifecycle {
     public int getPhase() {
         return 0; // lowest priority
     }
+
+    protected Map getGameMap() {
+        return gameMap;
+    }
+
+    protected void addPlayer(Player p){
+        gameMap.addObject(p);
+    }
+
+    protected void removePlayer(Player p){
+        gameMap.removeObject(p);
+    }
+    
 }

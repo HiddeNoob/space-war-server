@@ -1,10 +1,11 @@
 package com.hiddenoob.space_war_server.config;
 
-import com.hiddenoob.space_war_server.websocket.GameWebSocketHandler;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+
+import com.hiddenoob.space_war_server.server.GameWebSocketHandler;
 
 @Configuration
 @EnableWebSocket

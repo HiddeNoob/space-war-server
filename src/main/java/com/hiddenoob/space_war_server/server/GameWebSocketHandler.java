@@ -1,4 +1,4 @@
-package com.hiddenoob.space_war_server.websocket;
+package com.hiddenoob.space_war_server.server;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,10 +21,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GameWebSocketHandler extends TextWebSocketHandler {
     private static final Logger logger = LoggerFactory.getLogger(GameWebSocketHandler.class);
     private final Map<String, Player> sessions = new ConcurrentHashMap<>();
-    private final com.hiddenoob.space_war_server.gameObjects.Map gameMap;
+    private final Game game;
 
-    GameWebSocketHandler(com.hiddenoob.space_war_server.gameObjects.Map gameMap){
-        this.gameMap = gameMap;
+    GameWebSocketHandler(Game game){
+        this.game = game;
     }
 
     @Override
@@ -33,16 +33,21 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
             session, 1000, 64 * 1024
         );
         Player newPlayer = new Player(safeSession);
+        
         sessions.put(session.getId(), newPlayer);
-        gameMap.addObject(newPlayer);
-        safeSession.sendMessage(new TextMessage("Welcome!"));
+        game.addPlayer(newPlayer);
+        
+
+
         logger.info("{} connected as {}",session.getRemoteAddress(),session.getId());
+
         broadcastMessage(session.getId() + " joined the game");
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         sessions.remove(session.getId()); 
+        game.removePlayer(sessions.get(session.getId()));
         logger.info("{} left from server",session.getId());
     }
 
