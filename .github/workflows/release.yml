@@ -1,18 +1,14 @@
 name: Release
-
 on:
   push:
-    branches:
-      - main 
-    paths:
-      - 'pom.xml'
+    tags:
+      - 'v*'
 
 jobs:
   release:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -24,20 +20,28 @@ jobs:
         distribution: 'temurin'
         cache: 'maven'
 
-    - name: Get Maven Version from pom.xml
+    - name: Get version from tag
       id: get_version
-      uses: orand/maven-get-version-action@v1.3.1
+      run: echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+
+    - name: Validate pom.xml version matches tag
+      run: |
+        POM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        TAG_VERSION=${{ steps.get_version.outputs.version }}
+        if [ "$POM_VERSION" != "$TAG_VERSION" ]; then
+          echo "❌ pom.xml version ($POM_VERSION) does not match tag ($TAG_VERSION)"
+          exit 1
+        fi
 
     - name: Build with Maven
       run: mvn clean package -DskipTests
 
     - name: Create GitHub Release
-      id: create_release
       uses: softprops/action-gh-release@v2
       with:
         files: target/*.jar
-        tag_name: "v${{ steps.get_version.outputs.version }}"
-        name: "Release v${{ steps.get_version.outputs.version }}"
+        tag_name: ${{ github.ref_name }}
+        name: "Release ${{ github.ref_name }}"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
