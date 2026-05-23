@@ -15,12 +15,16 @@ public class LinePacket extends Packet {
     public PacketType getPacketType() { return PacketType.LINE; }
 
     @Override
-    protected int getBodySize() { return a.getPacketSize() + b.getPacketSize(); }
+    protected int getBodySize() {
+        // Düzeltme: Sadece Vector2Packet'ların body boyutlarını toplar, header'larını değil.
+        return a.getBodySize() + b.getBodySize();
+    }
 
     @Override
     public void writeToPacketBody(ByteBuffer buffer) {
-        a.exportPacketToBuffer(buffer);
-        b.exportPacketToBuffer(buffer);
+        // Düzeltme: Sadece Vector2Packet'ların body'lerini yazar, header'larını değil.
+        a.writeToPacketBody(buffer);
+        b.writeToPacketBody(buffer);
     }
 
     public Vector2Packet getA() { return a; }

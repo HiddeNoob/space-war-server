@@ -1,16 +1,14 @@
 package com.hiddenoob.space_war_server.gameObjects;
 
+import com.hiddenoob.Math.Polygons.Rectangle;
 import com.hiddenoob.Math.Vector2;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 class MapTest {
@@ -24,36 +22,39 @@ class MapTest {
 
     @Test
     void testAddAndQueryObject() {
-        Astreoid asteroid = Mockito.mock(Astreoid.class);
+        Asteroid asteroid = Mockito.mock(Asteroid.class);
         Vector2 position = new Vector2(10.0, 10.0);
         when(asteroid.getPosition()).thenReturn(position);
 
         gameMap.addObject(asteroid);
 
         // Query range that includes the asteroid
-        List<Astreoid> results = gameMap.queryRange(0, 20, 0, 20);
+        List<Asteroid> results = gameMap.queryRange(new Rectangle(0, 20, 0,
+                20));
         assertEquals(1, results.size(), "Should find exactly one asteroid");
-        assertEquals(asteroid, results.get(0), "The found asteroid should be the one we added");
+        assertEquals(asteroid, results.get(0), "The found asteroid should be " +
+                "the one we added");
     }
 
     @Test
     void testQueryOutsideRange() {
-        Astreoid asteroid = Mockito.mock(Astreoid.class);
+        Asteroid asteroid = Mockito.mock(Asteroid.class);
         Vector2 position = new Vector2(50.0, 50.0);
         when(asteroid.getPosition()).thenReturn(position);
 
         gameMap.addObject(asteroid);
 
         // Query range that excludes the asteroid
-        List<Astreoid> results = gameMap.queryRange(0, 10, 0, 10);
+        List<Asteroid> results = gameMap.queryRange(new Rectangle(0, 10, 0,
+                10));
         assertTrue(results.isEmpty());
     }
 
     @Test
     void testAddNullHandling() {
         assertDoesNotThrow(() -> gameMap.addObject(null));
-        
-        Astreoid asteroidWithNullPos = Mockito.mock(Astreoid.class);
+
+        Asteroid asteroidWithNullPos = Mockito.mock(Asteroid.class);
         when(asteroidWithNullPos.getPosition()).thenReturn(null);
         assertDoesNotThrow(() -> gameMap.addObject(asteroidWithNullPos));
     }

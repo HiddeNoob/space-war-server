@@ -1,39 +1,39 @@
 package com.hiddenoob.space_war_server.server;
 
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-
+import com.hiddenoob.Math.Lines.BreakableLine;
+import com.hiddenoob.Math.Polygons.Polygon;
+import com.hiddenoob.Math.Vector2;
+import com.hiddenoob.space_war_server.events.SendMessageEvent;
+import com.hiddenoob.space_war_server.gameObjects.Map;
+import com.hiddenoob.space_war_server.gameObjects.Player;
 import com.hiddenoob.space_war_server.packets.PacketMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.BinaryMessage;
 
-import com.hiddenoob.Math.Vector2;
-
-import com.hiddenoob.space_war_server.gameObjects.Astreoid;
-import com.hiddenoob.space_war_server.gameObjects.Map;
-import com.hiddenoob.space_war_server.gameObjects.Player;
-
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random; // Import Random
 
 
 @Component
 public class Game implements SmartLifecycle {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(Game.class);
 
-
     private final long tickRate = 1000 / 1; // 64 tick per second
-    private volatile boolean isRunning = false;
-
     private final Map gameMap;
+
+    // TODO concurrent collision olur ConcurrentHashMap yap
     private final HashSet<Player> players = new HashSet<>();
     private final ApplicationEventPublisher eventPublisher;
+    private final Random random = new Random(); // Random nesnesi ekle
+    private volatile boolean isRunning = false;
 
-    Game(Map map, ApplicationEventPublisher eventPublisher){
+    Game(Map map, ApplicationEventPublisher eventPublisher) {
         this.gameMap = map;
         this.eventPublisher = eventPublisher;
     }
@@ -44,16 +44,22 @@ public class Game implements SmartLifecycle {
             long startTime = System.currentTimeMillis();
 
             players.forEach((player) -> {
-                Vector2 pos = player.getPosition();
-                List<Astreoid> nearAstreoids = gameMap.queryRange(pos.x - 20,pos.x + 20,pos.y - 20,pos.y + 20);
-                var polygons = nearAstreoids.stream().map((Astreoid::getShape)).toList();
-                try {
-                    var buffer = PacketMapper.toPolygonPacketList(polygons).toArray();
-                    logger.info(buffer.length + " byte is sending to player: " + player.getSession().getId());
-                    player.getSession().sendMessage(new BinaryMessage(buffer));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                Vector2 playerPos = player.getPosition();
+                double playerRotation = player.getPhysics().getRotation();
+                final int range = 20;
+                List<Polygon<BreakableLine>> nearAstreoids = new ArrayList<>();
+                gameMap.forEachInRange(playerPos.x - range,
+                        playerPos.x + range, playerPos.y - range,
+                        playerPos.y + range,
+                        asteroid -> {
+                            nearAstreoids.add(asteroid.getActualPolygon());
+                        });
+
+
+                eventPublisher.publishEvent(new SendMessageEvent(this,
+                        PacketMapper.toPolygonPacketList(nearAstreoids).toArray(),
+                        player
+                ));
             });
 
             long elapsed = System.currentTimeMillis() - startTime;
@@ -67,6 +73,8 @@ public class Game implements SmartLifecycle {
                     break;
                 }
             }
+
+
         }
     }
 
@@ -74,7 +82,7 @@ public class Game implements SmartLifecycle {
     public void start() {
         logger.info("Starting game loop");
         this.isRunning = true;
-        
+
         Thread gameThread = new Thread(this::startLoop, "game-loop-thread");
         gameThread.start();
     }
@@ -99,14 +107,21 @@ public class Game implements SmartLifecycle {
         return gameMap;
     }
 
-    protected void addPlayer(Player p){
+    protected void addPlayer(Player p) {
+
+        float deltaX = (random.nextFloat() * 100) - 50;
+        float deltaY = (random.nextFloat() * 100) - 50;
+
+
+        p.getPhysics().setPosition(new Vector2(deltaX, deltaY));
+
         gameMap.addObject(p);
         players.add(p);
     }
 
-    protected void removePlayer(Player p){
+    protected void removePlayer(Player p) {
         gameMap.removeObject(p);
         players.remove(p);
     }
-    
+
 }

@@ -5,22 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Space War Client</title>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        canvas { border: 2px solid #333; background: #050505; }
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        canvas {
+            border: 2px solid #333;
+            background: #050505;
+            display: block;
+        }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
 
-        const socket = new WebSocket(`ws://${window.location.host}/ws/game`);
+<canvas id="gameCanvas" width="800" height="600"></canvas>
 
-        socket.onopen = () => console.log("Sunucuya bağlandı.");
-        socket.onmessage = (event) => {
-            console.log("Veri alındı:", event.data);
-        };
-    </script>
+<!-- 1. Üçüncü Parti Kütüphaneler -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+
+<!-- 2. Temel Modüller ve Sınıf Tanımlamaları -->
+<script src="packetHandler.js"></script>
+<script src="camera.js"></script>
+<script src="renderer.js"></script>
+<script src="network.js"></script>
+
+<!-- 3. Ana Giriş Noktası ve Game Loop -->
+<script src="main.js"></script>
+
 </body>
 </html>

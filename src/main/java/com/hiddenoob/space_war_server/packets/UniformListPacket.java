@@ -27,7 +27,9 @@ public class UniformListPacket<T extends Packet> extends  ListPacket{
     }
 
     @Override
-    protected int getHeaderSize(){ return super.getHeaderSize() + 4; }
+    protected int getHeaderSize(){
+        return super.getHeaderSize() + 1;
+    }
 
     @Override
     protected void writeToPacketBody(ByteBuffer buffer) {
