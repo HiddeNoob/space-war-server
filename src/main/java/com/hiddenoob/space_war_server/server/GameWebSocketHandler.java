@@ -27,7 +27,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     }
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+    public void afterConnectionEstablished(WebSocketSession session) {
         WebSocketSession safeSession = new ConcurrentWebSocketSessionDecorator(
             session, 1000, 64 * 1024
         );
@@ -46,7 +46,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     }
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         game.removePlayer(sessions.get(session.getId()));
         sessions.remove(session.getId());
         logger.info("{} left from server",session.getId());

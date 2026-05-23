@@ -4,7 +4,6 @@ import com.hiddenoob.Math.Lines.BreakableLine;
 import com.hiddenoob.Math.Vector2;
 import com.hiddenoob.Math.Lines.Line;
 import com.hiddenoob.Math.Polygons.Polygon;
-import org.springframework.web.socket.WebSocketMessage;
 
 import java.time.Instant;
 import java.util.List;
@@ -34,7 +33,7 @@ public class PacketMapper {
         List<LinePacket> linePackets = polygon.getLines().stream()
                 .map(PacketMapper::toPacket) // Yukarıdaki metodu çağırıyor
                 .toList();
-        ListPacket listPacket = new UniformListPacket<LinePacket>(linePackets.toArray(new LinePacket[0]));
+        ListPacket listPacket = new UniformListPacket<>(linePackets.toArray(new LinePacket[0]));
 
         return new PolygonPacket(listPacket);
     }

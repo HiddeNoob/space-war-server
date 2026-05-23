@@ -6,9 +6,9 @@ import java.nio.ByteBuffer;
 public class NotificationPacket extends Packet {
 
 
-    private StringPacket datetime;
-    private StringPacket message;
-    private StringPacket sender;
+    private final StringPacket datetime;
+    private final StringPacket message;
+    private final StringPacket sender;
 
     protected NotificationPacket(StringPacket sender, StringPacket message, StringPacket datetime) {
         this.sender = sender;
