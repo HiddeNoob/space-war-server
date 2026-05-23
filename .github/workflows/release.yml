@@ -41,7 +41,7 @@ jobs:
       with:
         files: target/*.jar
         tag_name: ${{ github.ref_name }}
-        name: "Release ${{ github.ref_name }}"
+        name: "${{ github.ref_name }}"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
