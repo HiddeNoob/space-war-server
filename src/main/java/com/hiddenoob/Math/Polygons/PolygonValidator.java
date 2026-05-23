@@ -1,12 +1,12 @@
 package com.hiddenoob.Math.Polygons;
 
+import com.hiddenoob.Math.Lines.Line;
+import com.hiddenoob.Math.Vector2;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-
-import com.hiddenoob.Math.Vector2;
-import com.hiddenoob.Math.Lines.Line;
 
 class PolygonValidator {
 
@@ -14,18 +14,21 @@ class PolygonValidator {
 
     protected static <T extends Line> void validatePolygon(Collection<T> lines) {
         if (lines == null || lines.size() < 3) {
-            throw new IllegalArgumentException("A valid polygon requires at least 3 sides");
+            throw new IllegalArgumentException("A valid polygon requires at " +
+                    "least 3 sides");
         }
 
         List<Vector2> vertices = orderVertices(lines);
         if (vertices.size() < 3) {
-            throw new IllegalArgumentException("Lines do not form a valid polygon");
+            throw new IllegalArgumentException("Lines do not form a valid " +
+                    "polygon");
         }
 
         if (!isClosed(vertices)) {
-            throw new IllegalArgumentException("Polygon is not closed (open loop)");
+            throw new IllegalArgumentException("Polygon is not closed (open " +
+                    "loop)");
         }
-        
+
     }
 
     private static <T extends Line> List<Vector2> orderVertices(Collection<T> lines) {
@@ -34,8 +37,8 @@ class PolygonValidator {
 
         List<Vector2> vertices = new ArrayList<>();
         T first = remaining.remove(0);
-        Vector2 start = first.getA();
-        Vector2 current = first.getB();
+        Vector2 start = first.getStart();
+        Vector2 current = first.getEnd();
         vertices.add(start);
         vertices.add(current);
 
@@ -44,15 +47,15 @@ class PolygonValidator {
             Iterator<T> iterator = remaining.iterator();
             while (iterator.hasNext()) {
                 T line = iterator.next();
-                if (almostEquals(line.getA(), current)) {
-                    current = line.getB();
+                if (almostEquals(line.getStart(), current)) {
+                    current = line.getEnd();
                     vertices.add(current);
                     iterator.remove();
                     found = true;
                     break;
                 }
-                if (almostEquals(line.getB(), current)) {
-                    current = line.getA();
+                if (almostEquals(line.getEnd(), current)) {
+                    current = line.getStart();
                     vertices.add(current);
                     iterator.remove();
                     found = true;

@@ -4,19 +4,20 @@ import com.hiddenoob.Math.Vector2;
 
 public class BreakableLine extends Line {
 
-    private final int maxHealth; 
+    private final int maxHealth;
     private int health = 100;
     private int durability = 10;
 
-    public BreakableLine(Vector2 a, Vector2 b,int health, int durability) {
-        super(a,b);
+    public BreakableLine(Vector2 a, Vector2 b, int health, int durability) {
+        super(a, b);
         this.maxHealth = health;
         this.health = health;
+        this.durability = durability; // Initialize durability
     }
 
-    public BreakableLine(Vector2 a, Vector2 b){
-        super(a,b);
-        this.maxHealth = health;
+    public BreakableLine(Vector2 a, Vector2 b) {
+        super(a, b);
+        this.maxHealth = health; // Default maxHealth
     }
 
     public void hit(int damage) {
@@ -27,13 +28,17 @@ public class BreakableLine extends Line {
         this.durability = durability;
     }
 
+    public int getHealth() {
+        return health;
+    }
+
     public void setHealth(int health) {
         this.health = Math.min(health, maxHealth);
     }
 
-
-    public int getHealth() { return health; }
-
-    public BreakableLine copy() { return new BreakableLine(a, b); }
+    @Override
+    public BreakableLine clone() {
+        // Return a new BreakableLine instance, preserving its state
+        return new BreakableLine(start.clone(), end.clone(), maxHealth, durability);
+    }
 }
-
