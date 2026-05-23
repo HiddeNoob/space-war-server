@@ -1,9 +1,15 @@
 package com.hiddenoob.space_war_server.packets;
 
 public enum PacketType {
+    UNKNOWN((byte) 0),
     VECTOR2((byte) 1),
     LINE((byte) 2),
-    POLYGON((byte) 3);
+    BREAKABLE_LINE((byte) 3),
+    POLYGON((byte) 4),
+    NOTIFICATION((byte) 5),
+    STRING((byte) 6),
+    ARRAY((byte) 7),
+    UNIFORM_ARRAY((byte) 8);
 
     private final byte id;
 

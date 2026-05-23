@@ -1,19 +1,23 @@
 package com.hiddenoob.space_war_server.server;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 
+import com.hiddenoob.space_war_server.packets.PacketMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.BinaryMessage;
 
 import com.hiddenoob.Math.Vector2;
+
 import com.hiddenoob.space_war_server.gameObjects.Astreoid;
 import com.hiddenoob.space_war_server.gameObjects.Map;
 import com.hiddenoob.space_war_server.gameObjects.Player;
-import com.hiddenoob.space_war_server.mapper.PacketMapper;
+
 
 
 @Component
@@ -22,15 +26,16 @@ public class Game implements SmartLifecycle {
     private static final Logger logger = LoggerFactory.getLogger(Game.class);
 
 
-    private long tickRate = 1000 / 1; // 64 tick per second
-    private volatile boolean isRunning = false; 
-    private Map gameMap;
-    private GameWebSocketHandler socketHandler;
+    private final long tickRate = 1000 / 1; // 64 tick per second
+    private volatile boolean isRunning = false;
 
+    private final Map gameMap;
+    private final HashSet<Player> players = new HashSet<>();
+    private final ApplicationEventPublisher eventPublisher;
 
-    Game(Map map,GameWebSocketHandler socketHandler){
+    Game(Map map, ApplicationEventPublisher eventPublisher){
         this.gameMap = map;
-        this.socketHandler = socketHandler;
+        this.eventPublisher = eventPublisher;
     }
 
 
@@ -38,23 +43,17 @@ public class Game implements SmartLifecycle {
         while (this.isRunning && !Thread.currentThread().isInterrupted()) {
             long startTime = System.currentTimeMillis();
 
-
-            // test için.
-            socketHandler.getSessions().forEach((id, player) -> {
+            players.forEach((player) -> {
                 Vector2 pos = player.getPosition();
                 List<Astreoid> nearAstreoids = gameMap.queryRange(pos.x - 20,pos.x + 20,pos.y - 20,pos.y + 20);
-                nearAstreoids.forEach((entity -> 
-                    {
-                        try {
-                            player.getSession().sendMessage(
-                                new BinaryMessage(PacketMapper.toPacket(entity.getShape()).toByteArray())
-                            );
-                        } catch (IOException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
-                    }
-                ));
+                var polygons = nearAstreoids.stream().map((Astreoid::getShape)).toList();
+                try {
+                    var buffer = PacketMapper.toPolygonPacketList(polygons).toArray();
+                    logger.info(buffer.length + " byte is sending to player: " + player.getSession().getId());
+                    player.getSession().sendMessage(new BinaryMessage(buffer));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             });
 
             long elapsed = System.currentTimeMillis() - startTime;
@@ -102,10 +101,12 @@ public class Game implements SmartLifecycle {
 
     protected void addPlayer(Player p){
         gameMap.addObject(p);
+        players.add(p);
     }
 
     protected void removePlayer(Player p){
         gameMap.removeObject(p);
+        players.remove(p);
     }
     
 }

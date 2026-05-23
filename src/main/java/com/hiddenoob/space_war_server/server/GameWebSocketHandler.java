@@ -1,12 +1,11 @@
 package com.hiddenoob.space_war_server.server;
 
+import com.hiddenoob.space_war_server.packets.PacketMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorator;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
@@ -41,22 +40,30 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
         logger.info("{} connected as {}",session.getRemoteAddress(),session.getId());
 
-        broadcastMessage(session.getId() + " joined the game");
+        broadcastMessage(
+                PacketMapper.toPacket("Server",session.getId() + " connected").toArray()
+        );
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        sessions.remove(session.getId()); 
         game.removePlayer(sessions.get(session.getId()));
+        sessions.remove(session.getId());
         logger.info("{} left from server",session.getId());
+        broadcastMessage(
+                PacketMapper.toPacket("Server",session.getId() + " left").toArray()
+        );
     }
 
-    @Async
-    public void broadcastMessage(String message) {
-        TextMessage textMessage = new TextMessage(message);
+    @EventListener
+    public void handleGameBroadcast(BroadcastEvent event) {
+        broadcastMessage(event.getPayload().toArray());
+    }
+
+    public void broadcastMessage(byte[] message) {
         for (Player p : sessions.values()) {
             try {
-                p.getSession().sendMessage(textMessage);
+                p.getSession().sendMessage(new BinaryMessage(message));
             } catch (IOException e) {
                 logger.error(e.getMessage());
             }
