@@ -2,8 +2,10 @@ name: Release
 
 on:
   push:
-    tags:
-      - 'v*' # Sadece v1.0.0 gibi versiyon etiketlerinde çalışır
+    branches:
+      - main 
+    paths:
+      - 'pom.xml'
 
 jobs:
   release:
@@ -20,11 +22,11 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        # İlk çalıştırmada bağımlılıkları indirir ve kaydeder. 
-        # Ve cachler
-        # cache pom.xml'e bagimlidir
         cache: 'maven'
 
+    - name: Get Maven Version from pom.xml
+      id: get_version
+      uses: orand/maven-get-version-action@v1.3.1
 
     - name: Build with Maven
       run: mvn clean package -DskipTests
@@ -34,6 +36,8 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         files: target/*.jar
+        tag_name: "v${{ steps.get_version.outputs.version }}"
+        name: "Release v${{ steps.get_version.outputs.version }}"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
