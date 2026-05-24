@@ -3,18 +3,29 @@ package com.hiddenoob.space_war_server.packets;
 import java.nio.ByteBuffer;
 
 public class PolygonPacket extends Packet {
+
+    public static PolygonPacket decode(ByteBuffer buffer) {
+        buffer.getInt(); // bodySize
+        ListPacket lines = (ListPacket) PacketMapper.fromBuffer(buffer);
+        return new PolygonPacket(lines);
+    }
     private final ListPacket lines;
+
+    // ── Decode ───────────────────────────────────────────────────────────────
 
     protected PolygonPacket(ListPacket lines) {
         this.lines = lines;
     }
 
+    // ── Encode ───────────────────────────────────────────────────────────────
+
     @Override
-    public PacketType getPacketType() { return PacketType.POLYGON; }
+    public PacketType getPacketType() {
+        return PacketType.POLYGON;
+    }
 
     @Override
     public int getBodySize() {
-
         return lines.getPacketSize();
     }
 
@@ -23,5 +34,9 @@ public class PolygonPacket extends Packet {
         lines.exportPacketToBuffer(buffer);
     }
 
-    public ListPacket getLines() { return lines; }
+    // ── Getters ──────────────────────────────────────────────────────────────
+
+    public ListPacket getLines() {
+        return lines;
+    }
 }

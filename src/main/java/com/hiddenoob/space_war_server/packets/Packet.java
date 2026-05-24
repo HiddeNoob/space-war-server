@@ -3,25 +3,24 @@ package com.hiddenoob.space_war_server.packets;
 import java.nio.ByteBuffer;
 
 public abstract class Packet {
+
     public abstract PacketType getPacketType();
+
     protected abstract int getBodySize();
 
-    // Verilen buffer'i body'ye yazar 
     protected abstract void writeToPacketBody(ByteBuffer buffer);
 
-    protected  int getHeaderSize() {
-        return 5; // 1 byte for packet type, 4 bytes for size
+    protected int getHeaderSize() {
+        return 5; // 1 byte PacketType + 4 byte BodySize
     }
+
     public int getPacketSize() {
-        return getHeaderSize() + getBodySize(); // 1 byte for packet type, 4 bytes for size, rest for data
+        return getHeaderSize() + getBodySize();
     }
 
     public byte[] toArray() {
-        int totalSize = getHeaderSize() + getBodySize();
-        ByteBuffer buffer = ByteBuffer.allocate(totalSize);
-        
+        ByteBuffer buffer = ByteBuffer.allocate(getPacketSize());
         exportPacketToBuffer(buffer);
-        
         return buffer.array();
     }
 
