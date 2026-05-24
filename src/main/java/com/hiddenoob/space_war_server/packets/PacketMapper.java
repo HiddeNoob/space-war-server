@@ -4,13 +4,47 @@ import com.hiddenoob.Math.Lines.BreakableLine;
 import com.hiddenoob.Math.Lines.Line;
 import com.hiddenoob.Math.Polygons.Polygon;
 import com.hiddenoob.Math.Vector2;
+import com.hiddenoob.space_war_server.packets.action.ActionPacket;
 
 import java.lang.reflect.Array;
+import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.util.List;
 import java.util.function.Function;
 
 public class PacketMapper {
+
+    // =========================================================================
+    // Decode
+    // =========================================================================
+
+    public static Packet fromBuffer(ByteBuffer buffer) {
+        byte typeId = buffer.get();
+        PacketType type = resolvePacketType(typeId);
+        return switch (type) {
+            case VECTOR2 -> Vector2Packet.decode(buffer);
+            case LINE -> LinePacket.decode(buffer);
+            case BREAKABLE_LINE -> BreakableLinePacket.decode(buffer);
+            case STRING -> StringPacket.decode(buffer);
+            case NOTIFICATION -> NotificationPacket.decode(buffer);
+            case ARRAY -> ListPacket.decode(buffer);
+            case UNIFORM_ARRAY -> UniformListPacket.decode(buffer);
+            case POLYGON -> PolygonPacket.decode(buffer);
+            case ACTION -> ActionPacket.decode(buffer);
+            default ->
+                    throw new IllegalArgumentException("Unknown packet type: "
+                            + type);
+        };
+    }
+
+
+    public static PacketType resolvePacketType(byte id) {
+        for (PacketType type : PacketType.values()) {
+            if (type.getId() == id) return type;
+        }
+        return PacketType.UNKNOWN;
+    }
+
 
     public static Vector2Packet toPacket(Vector2 vector) {
         return new Vector2Packet((float) vector.x, (float) vector.y);
@@ -29,9 +63,8 @@ public class PacketMapper {
     }
 
     public static <T extends Line> PolygonPacket toPacket(Polygon<T> polygon) {
-        // Polygon içindeki çizgileri LinePacket listesine çeviriyoruz
         List<LinePacket> linePackets = polygon.getLines().stream()
-                .map(PacketMapper::toPacket) // Yukarıdaki metodu çağırıyor
+                .map(PacketMapper::toPacket)
                 .toList();
         ListPacket listPacket =
                 new UniformListPacket<>(linePackets.toArray(new LinePacket[0]));
@@ -44,18 +77,13 @@ public class PacketMapper {
     }
 
     public static NotificationPacket toPacket(String sender, String message) {
-        return new NotificationPacket(toPacket(sender), toPacket(message),
-                toPacket(Instant.now().toString()));
+        return new NotificationPacket(
+                toPacket(sender),
+                toPacket(message),
+                toPacket(Instant.now().toString())
+        );
     }
 
-    // Helper method for UniformListPacket
-    private static <T, P extends Packet> UniformListPacket<P> toUniformListPacket(List<T> items, Function<T, P> mapper, Class<P> packetClass) {
-        P[] packetArray = (P[]) Array.newInstance(packetClass, items.size());
-        for (int i = 0; i < items.size(); i++) {
-            packetArray[i] = mapper.apply(items.get(i));
-        }
-        return new UniformListPacket<>(packetArray);
-    }
 
     public static UniformListPacket<Vector2Packet> toVector2PacketList(List<Vector2> vectors) {
         return toUniformListPacket(vectors, PacketMapper::toPacket,
@@ -67,13 +95,27 @@ public class PacketMapper {
                 LinePacket.class);
     }
 
-    public static <T extends Line> UniformListPacket<PolygonPacket> toPolygonPacketList(List<Polygon<T>> polygons) {
-        return toUniformListPacket(polygons, PacketMapper::toPacket,
-                PolygonPacket.class);
+    public static <T extends Line> ListPacket toPolygonPacketList(
+            List<Polygon<T>> polygons) {
+        List<PolygonPacket> packets = polygons.stream()
+                .map(PacketMapper::toPacket)
+                .toList();
+        return new ListPacket(packets.toArray(new PolygonPacket[0]));
     }
 
-    public static UniformListPacket<StringPacket> toStringPacketList(List<String> strings) {
-        return toUniformListPacket(strings, PacketMapper::toPacket,
-                StringPacket.class);
+    public static ListPacket toStringPacketList(List<String> strings) {
+        List<StringPacket> packets = strings.stream()
+                .map(PacketMapper::toPacket)
+                .toList();
+        return new ListPacket(packets.toArray(new StringPacket[0]));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T, P extends Packet> UniformListPacket<P> toUniformListPacket(
+            List<T> items, Function<T, P> mapper, Class<P> packetClass) {
+        P[] packetArray = (P[]) Array.newInstance(packetClass, items.size());
+        for (int i = 0; i < items.size(); i++)
+            packetArray[i] = mapper.apply(items.get(i));
+        return new UniformListPacket<>(packetArray);
     }
 }

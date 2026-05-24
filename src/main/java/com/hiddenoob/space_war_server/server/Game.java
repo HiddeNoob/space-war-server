@@ -27,7 +27,6 @@ public class Game implements SmartLifecycle {
     private final long tickRate = 1000 / 1; // 64 tick per second
     private final Map gameMap;
 
-    // TODO concurrent collision olur ConcurrentHashMap yap
     private final HashSet<Player> players = new HashSet<>();
     private final ApplicationEventPublisher eventPublisher;
     private final Random random = new Random(); // Random nesnesi ekle
@@ -123,5 +122,4 @@ public class Game implements SmartLifecycle {
         gameMap.removeObject(p);
         players.remove(p);
     }
-
 }

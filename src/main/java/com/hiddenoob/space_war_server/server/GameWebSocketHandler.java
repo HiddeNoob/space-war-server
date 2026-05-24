@@ -2,8 +2,10 @@ package com.hiddenoob.space_war_server.server;
 
 import com.hiddenoob.space_war_server.events.SendMessageEvent;
 import com.hiddenoob.space_war_server.gameObjects.Player;
+import com.hiddenoob.space_war_server.packets.Packet;
 import com.hiddenoob.space_war_server.packets.PacketMapper;
 import com.hiddenoob.space_war_server.utils.CompressionUtils;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -12,16 +14,17 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.handler.BinaryWebSocketHandler;
 import org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorator;
-import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-public class GameWebSocketHandler extends TextWebSocketHandler {
+public class GameWebSocketHandler extends BinaryWebSocketHandler {
     private static final Logger logger =
             LoggerFactory.getLogger(GameWebSocketHandler.class);
     private final Map<String, Player> sessions = new ConcurrentHashMap<>();
@@ -38,7 +41,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     }
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) {
+    public void afterConnectionEstablished(@NonNull WebSocketSession session) {
         WebSocketSession safeSession = new ConcurrentWebSocketSessionDecorator(
                 session, 1000, 64 * 1024
         );
@@ -46,7 +49,6 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
         sessions.put(session.getId(), newPlayer);
         game.addPlayer(newPlayer);
-
 
         logger.info("{} connected as {}", session.getRemoteAddress(),
                 session.getId());
@@ -60,7 +62,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session,
-                                      CloseStatus status) {
+                                      @NonNull CloseStatus status) {
         game.removePlayer(sessions.get(session.getId()));
         sessions.remove(session.getId());
         logger.info("{} left from server", session.getId());
@@ -68,6 +70,26 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
                 PacketMapper.toPacket("Server", session.getId() + " left").toArray(),
                 null
         ));
+    }
+
+    @Override
+    protected void handleBinaryMessage(WebSocketSession session,
+                                       BinaryMessage message) {
+        try {
+            ByteBuffer payload = message.getPayload();
+            byte[] bytes = new byte[payload.remaining()];
+            payload.get(bytes);
+
+            byte[] decompressedBytes = CompressionUtils.decompress(bytes);
+            ByteBuffer buffer = ByteBuffer.wrap(decompressedBytes);
+
+            Packet packet = PacketMapper.fromBuffer(buffer);
+
+
+        } catch (Exception e) {
+            logger.error("Error processing incoming WebSocket message: {}",
+                    e.getMessage(), e);
+        }
     }
 
     private void broadcastMessage(byte[] message) {
@@ -99,6 +121,4 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
             broadcastMessage(flaggedMessage);
         }
     }
-
-
 }

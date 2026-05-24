@@ -9,7 +9,8 @@ public enum PacketType {
     NOTIFICATION((byte) 5),
     STRING((byte) 6),
     ARRAY((byte) 7),
-    UNIFORM_ARRAY((byte) 8);
+    UNIFORM_ARRAY((byte) 8),
+    ACTION((byte) 9);
 
     private final byte id;
 
