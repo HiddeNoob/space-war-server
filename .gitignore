@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Frontend (TypeScript) ###
+src/main/typescript/node_modules/
