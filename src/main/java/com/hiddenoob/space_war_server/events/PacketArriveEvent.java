@@ -1,14 +1,15 @@
-package com.hiddenoob.space_war_server.server;
+package com.hiddenoob.space_war_server.events;
 
+import com.hiddenoob.space_war_server.gameObjects.Player;
 import com.hiddenoob.space_war_server.packets.Packet;
 
 import java.time.Instant;
 
-public class BroadcastEvent {
+public class PacketArriveEvent {
     private final Packet packet;
     private final Instant timestamp = Instant.now();
 
-    public BroadcastEvent(Packet packet) {
+    public PacketArriveEvent(Player from, Packet packet) {
         this.packet = packet;
     }
 
