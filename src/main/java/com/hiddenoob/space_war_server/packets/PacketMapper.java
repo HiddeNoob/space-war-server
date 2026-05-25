@@ -31,6 +31,8 @@ public class PacketMapper {
             case UNIFORM_ARRAY -> UniformListPacket.decode(buffer);
             case POLYGON -> PolygonPacket.decode(buffer);
             case ACTION -> ActionPacket.decode(buffer);
+            case WORLD_STATE -> WorldStatePacket.decode(buffer);
+            case PLAYER_STATE -> PlayerStatePacket.decode(buffer);
             default ->
                     throw new IllegalArgumentException("Unknown packet type: "
                             + type);
@@ -117,5 +119,16 @@ public class PacketMapper {
         for (int i = 0; i < items.size(); i++)
             packetArray[i] = mapper.apply(items.get(i));
         return new UniformListPacket<>(packetArray);
+    }
+
+    public static Packet decodeBody(PacketType type, ByteBuffer buffer) {
+        return switch (type) {
+            case VECTOR2 -> Vector2Packet.decodeBody(buffer);
+            case LINE -> LinePacket.decodeBody(buffer);
+            case BREAKABLE_LINE -> BreakableLinePacket.decodeBody(buffer);
+            default ->
+                    throw new IllegalArgumentException(type + " has no body " +
+                            "decoder");
+        };
     }
 }

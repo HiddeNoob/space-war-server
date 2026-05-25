@@ -7,8 +7,11 @@ import com.hiddenoob.space_war_server.events.SendMessageEvent;
 import com.hiddenoob.space_war_server.gameObjects.Map;
 import com.hiddenoob.space_war_server.gameObjects.Player;
 import com.hiddenoob.space_war_server.packets.PacketMapper;
+import com.hiddenoob.space_war_server.packets.PlayerStatePacket;
+import com.hiddenoob.space_war_server.packets.WorldStatePacket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Component;
@@ -16,7 +19,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random; // Import Random
+import java.util.Random;
 
 
 @Component
@@ -24,12 +27,17 @@ public class Game implements SmartLifecycle {
 
     private static final Logger logger = LoggerFactory.getLogger(Game.class);
 
-    private final long tickRate = 1000 / 1; // 64 tick per second
     private final Map gameMap;
-
     private final HashSet<Player> players = new HashSet<>();
     private final ApplicationEventPublisher eventPublisher;
-    private final Random random = new Random(); // Random nesnesi ekle
+    private final Random random = new Random();
+
+    @Value("${app.search_range}")
+    private int SEARCH_RANGE = 100;
+
+    @Value("${app.tick_rate}")
+    private long TICK_RATE = 64;
+
     private volatile boolean isRunning = false;
 
     Game(Map map, ApplicationEventPublisher eventPublisher) {
@@ -43,26 +51,37 @@ public class Game implements SmartLifecycle {
             long startTime = System.currentTimeMillis();
 
             players.forEach((player) -> {
+                double oldX = player.getPosition().x;
+                double oldY = player.getPosition().y;
+                player.getPhysics().update(TICK_RATE / 1000.0);
+                gameMap.updateObjectPosition(player, oldX, oldY);
+
                 Vector2 playerPos = player.getPosition();
-                double playerRotation = player.getPhysics().getRotation();
-                final int range = 20;
                 List<Polygon<BreakableLine>> nearAstreoids = new ArrayList<>();
-                gameMap.forEachInRange(playerPos.x - range,
-                        playerPos.x + range, playerPos.y - range,
-                        playerPos.y + range,
+                gameMap.forEachInRange(playerPos.x - SEARCH_RANGE,
+                        playerPos.x + SEARCH_RANGE, playerPos.y - SEARCH_RANGE,
+                        playerPos.y + SEARCH_RANGE,
                         asteroid -> {
-                            nearAstreoids.add(asteroid.getActualPolygon());
+                            if (asteroid != player) {
+                                nearAstreoids.add(asteroid.getActualPolygon());
+                            }
                         });
 
-
                 eventPublisher.publishEvent(new SendMessageEvent(this,
-                        PacketMapper.toPolygonPacketList(nearAstreoids).toArray(),
+                        new WorldStatePacket(
+                                new PlayerStatePacket(
+                                        PacketMapper.toPacket(player.getPosition()),
+                                        (float) player.getPhysics().getRotation(),
+                                        PacketMapper.toPacket(player.getActualPolygon())
+                                ),
+                                PacketMapper.toPolygonPacketList(nearAstreoids)
+                        ).toArray(),
                         player
                 ));
             });
 
             long elapsed = System.currentTimeMillis() - startTime;
-            long sleepTime = tickRate - elapsed;
+            long sleepTime = 1000 / TICK_RATE - elapsed;
 
             if (sleepTime > 0) {
                 try {
@@ -72,8 +91,6 @@ public class Game implements SmartLifecycle {
                     break;
                 }
             }
-
-
         }
     }
 
@@ -107,12 +124,10 @@ public class Game implements SmartLifecycle {
     }
 
     protected void addPlayer(Player p) {
-
         float deltaX = (random.nextFloat() * 100) - 50;
         float deltaY = (random.nextFloat() * 100) - 50;
 
-
-        p.getPhysics().setPosition(new Vector2(deltaX, deltaY));
+        p.getPhysics().setPosition(new Vector2(deltaX + 500, deltaY + 500));
 
         gameMap.addObject(p);
         players.add(p);

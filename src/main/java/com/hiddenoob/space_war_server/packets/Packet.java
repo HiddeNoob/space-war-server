@@ -29,7 +29,7 @@ public abstract class Packet {
         buffer.putInt(getBodySize());        // 4 byte
     }
 
-    protected void exportPacketToBuffer(ByteBuffer buffer) {
+    public void exportPacketToBuffer(ByteBuffer buffer) {
         writeToPacketHeader(buffer);
         writeToPacketBody(buffer);
     }

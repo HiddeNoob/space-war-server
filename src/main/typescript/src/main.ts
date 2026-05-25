@@ -11,18 +11,16 @@ const renderer = new Renderer('gameCanvas');
 const camera = new Camera(renderer.canvas.width, renderer.canvas.height);
 
 // Game State
-let activePolygons: any[] = [];
+let localPlayerState: any = null;
+let otherObjectsPolygons: any[] = [];
 
 // Connect WebSocket
 network.connect();
 
 // Setup Packet Listeners
-packetHandler.onPacket(PacketType.UNIFORM_ARRAY, (data) => {
-    activePolygons = data;
-});
-
-packetHandler.onPacket(PacketType.ARRAY, (data) => {
-    activePolygons = data;
+packetHandler.onPacket(PacketType.WORLD_STATE, (data) => {
+    localPlayerState = data.localPlayer;
+    otherObjectsPolygons = data.nearObjects;
 });
 
 packetHandler.onPacket(PacketType.NOTIFICATION, (data) => {
@@ -62,31 +60,17 @@ function gameLoop(currentTime: number): void {
     const dt = currentTime - lastTime;
     lastTime = currentTime;
 
-    // Index 0 represents the local player
-    let localPlayerPos = null;
-    if (activePolygons.length > 0 && Array.isArray(activePolygons[0]) && activePolygons[0].length > 0) {
-        const playerLines = activePolygons[0];
-        let sumX = 0;
-        let sumY = 0;
-
-        // Sum lines start/end vectors to calculate centroid
-        playerLines.forEach((line: any) => {
-            sumX += line.a.x + line.b.x;
-            sumY += line.a.y + line.b.y;
-        });
-
-        const totalPoints = playerLines.length * 2;
-        localPlayerPos = {
-            x: sumX / totalPoints,
-            y: sumY / totalPoints
-        };
-    }
-
     // Update Camera
-    camera.update(dt, localPlayerPos);
+    camera.followPlayer(dt, localPlayerState);
 
     // Draw Scene
-    renderer.drawScene(activePolygons, camera);
+    const allPolygons = [];
+    if (localPlayerState && localPlayerState.polygon) {
+        allPolygons.push(localPlayerState.polygon);
+    }
+    otherObjectsPolygons.forEach(p => allPolygons.push(p));
+    
+    renderer.drawScene(allPolygons, camera);
 
     requestAnimationFrame(gameLoop);
 }

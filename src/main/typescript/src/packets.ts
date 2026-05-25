@@ -8,14 +8,9 @@ export enum PacketType {
     STRING = 6,
     ARRAY = 7,
     UNIFORM_ARRAY = 8,
-    ACTION = 9
-}
-
-export enum ActionType {
-    FORCE = 1,
-    ROTATION = 2,
-    ATTACK = 4,
-    BOOST = 8
+    ACTION = 9,
+    WORLD_STATE = 10,
+    PLAYER_STATE = 11
 }
 
 export interface Vector2Packet {
@@ -28,18 +23,12 @@ export interface LinePacket {
     b: Vector2Packet;
 }
 
-export interface BreakableLinePacket {
+export interface BreakableLinePacket extends LinePacket {
     health: number;
-    a: Vector2Packet;
-    b: Vector2Packet;
 }
 
 export interface PolygonPacket {
     lines: LinePacket[];
-}
-
-export interface StringPacket {
-    text: string;
 }
 
 export interface NotificationPacket {
@@ -48,13 +37,26 @@ export interface NotificationPacket {
     datetime: string;
 }
 
-export interface ListPacket {
-    items: any[];
+export interface StringPacket {
+    data: string;
 }
 
-export interface UniformListPacket {
-    itemType: PacketType;
-    items: any[];
+export interface PlayerState {
+    position: { x: number; y: number };
+    rotation: number;
+    polygon: any[];
+}
+
+export interface WorldState {
+    localPlayer: PlayerState;
+    nearObjects: any[][];
+}
+
+export enum ActionType {
+    FORCE = 1,
+    ROTATION = 2,
+    ATTACK = 4,
+    BOOST = 8
 }
 
 export interface ForceActionData {
@@ -67,7 +69,6 @@ export interface RotationActionData {
 }
 
 export class ActionPacket {
-    readonly packetType: PacketType = PacketType.ACTION;
     force: ForceActionData | null;
     rotation: RotationActionData | null;
     attack: boolean;

@@ -3,6 +3,9 @@ package com.hiddenoob.space_war_server.gameObjects;
 import com.hiddenoob.Math.Vector2;
 
 public class PhysicsBody implements Cloneable {
+    private final static double FRICTION_RATE = 0.4;
+    private final static double MIN_MASS = 1;
+    private final static double MIN_INERTIA = 1;
     private Vector2 position;
     private Vector2 velocity;
     private Vector2 force;
@@ -15,44 +18,76 @@ public class PhysicsBody implements Cloneable {
     }
 
     public PhysicsBody(Vector2 position, double mass, double inertia) {
-        this.position = position != null ? position.clone() : new Vector2(); // Clone position
+        this.position = position != null ? position.clone() : new Vector2();
+        // Clone position
         this.velocity = new Vector2();
         this.force = new Vector2();
-        this.mass = Math.max(0.001, mass);
-        this.inertia = Math.max(0.001, inertia);
-        this.rotation = 0.0;
+        setMass(mass);
+        setInertia(inertia);
+        setRotation(0.0);
     }
 
-    public Vector2 getPosition() { return position; }
-    public void setPosition(Vector2 position) { this.position = position; }
+    public Vector2 getPosition() {
+        return position;
+    }
 
-    public Vector2 getVelocity() { return velocity; }
-    public void setVelocity(Vector2 velocity) { this.velocity = velocity; }
+    public void setPosition(Vector2 position) {
+        this.position = position;
+    }
 
-    public Vector2 getForce() { return force; }
-    public void applyForce(Vector2 force) { this.force.add(force); }
+    public Vector2 getVelocity() {
+        return velocity;
+    }
 
-    public double getMass() { return mass; }
-    public void setMass(double mass) { this.mass = Math.max(0.001, mass); }
+    public void setVelocity(Vector2 velocity) {
+        this.velocity = velocity;
+    }
 
-    public double getInertia() { return inertia; }
-    public void setInertia(double inertia) { this.inertia = Math.max(0.001, inertia); }
+    public Vector2 getForce() {
+        return force;
+    }
 
-    public double getRotation() { return rotation; }
-    public void setRotation(double rotation) { this.rotation = rotation; }
+    public void applyForce(Vector2 force) {
+        this.force.add(force);
+    }
 
-    public double getSpeed() { return velocity.length(); }
+    public double getMass() {
+        return mass;
+    }
+
+    public void setMass(double mass) {
+        this.mass = Math.max(1, mass);
+    }
+
+    public double getInertia() {
+        return inertia;
+    }
+
+    public void setInertia(double inertia) {
+        this.inertia = Math.max(1, inertia);
+    }
+
+    public double getRotation() {
+        return rotation;
+    }
+
+    public void setRotation(double rotation) {
+        this.rotation = rotation;
+    }
+
+    public double getSpeed() {
+        return velocity.length();
+    }
 
     public void update(double dt) {
-        // Calculate acceleration using a clone of force to avoid modifying the original force vector prematurely.
+
         Vector2 acceleration = force.clone().mul(1.0 / mass);
 
-        // Update velocity in place. acceleration.mul(dt) modifies the acceleration vector itself.
         velocity.add(acceleration.mul(dt));
+        velocity.mul(Math.pow(1.0 - FRICTION_RATE, dt));
 
-        // Update position in place. We clone velocity before multiplying by dt to avoid modifying
-        // the velocity vector before it's fully used for the current frame's position update.
         position.add(velocity.clone().mul(dt));
+
 
         // Reset force for the next frame by setting its components to zero.
         force.x = 0;
@@ -68,7 +103,8 @@ public class PhysicsBody implements Cloneable {
             cloned.force = this.force.clone();
             return cloned;
         } catch (CloneNotSupportedException e) {
-            throw new InternalError(e); // Should not happen as we implement Cloneable
+            throw new InternalError(e); // Should not happen as we implement
+            // Cloneable
         }
     }
 }

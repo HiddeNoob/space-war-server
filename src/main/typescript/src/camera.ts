@@ -26,11 +26,11 @@ export class Camera {
         this.x = 0;
         this.y = 0;
 
-        this.offset = { x: 0, y: 0 };
+        this.offset = {x: 0, y: 0};
 
         this.scale = 10;
         this.targetScale = 10;
-        this.minScale = 2;
+        this.minScale = 5;
         this.maxScale = 40;
     }
 
@@ -63,5 +63,28 @@ export class Camera {
             x: (worldX * this.scale) + this.offset.x,
             y: (worldY * this.scale) + this.offset.y
         };
+    }
+
+    followPlayer(dt: number, playerState: any): void {
+        if (!playerState) return;
+
+        let targetPos;
+        if (playerState.position) {
+            targetPos = playerState.position;
+        } else {
+            const polygon = playerState.polygon || playerState;
+            if (!polygon || polygon.length === 0) return;
+
+            let sumX = 0;
+            let sumY = 0;
+            polygon.forEach((line: any) => {
+                sumX += line.a.x + line.b.x;
+                sumY += line.a.y + line.b.y;
+            });
+            const totalPoints = polygon.length * 2;
+            targetPos = {x: sumX / totalPoints, y: sumY / totalPoints};
+        }
+
+        this.update(dt, targetPos);
     }
 }

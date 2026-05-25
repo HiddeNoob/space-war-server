@@ -1,5 +1,6 @@
 package com.hiddenoob.space_war_server.server;
 
+import com.hiddenoob.space_war_server.events.PacketArriveEvent;
 import com.hiddenoob.space_war_server.events.SendMessageEvent;
 import com.hiddenoob.space_war_server.gameObjects.Player;
 import com.hiddenoob.space_war_server.packets.Packet;
@@ -75,6 +76,7 @@ public class GameWebSocketHandler extends BinaryWebSocketHandler {
     @Override
     protected void handleBinaryMessage(WebSocketSession session,
                                        BinaryMessage message) {
+        final Player sentBy = sessions.get(session.getId());
         try {
             ByteBuffer payload = message.getPayload();
             byte[] bytes = new byte[payload.remaining()];
@@ -83,9 +85,10 @@ public class GameWebSocketHandler extends BinaryWebSocketHandler {
             byte[] decompressedBytes = CompressionUtils.decompress(bytes);
             ByteBuffer buffer = ByteBuffer.wrap(decompressedBytes);
 
-            Packet packet = PacketMapper.fromBuffer(buffer);
+            final Packet incomingPacket = PacketMapper.fromBuffer(buffer);
 
-
+            eventPublisher.publishEvent(new PacketArriveEvent(this, sentBy,
+                    incomingPacket));
         } catch (Exception e) {
             logger.error("Error processing incoming WebSocket message: {}",
                     e.getMessage(), e);
@@ -107,8 +110,7 @@ public class GameWebSocketHandler extends BinaryWebSocketHandler {
     public void handleSendMessage(SendMessageEvent event) {
         byte[] flaggedMessage = CompressionUtils.compress(event.getMessage());
         Player targetPlayer = event.getTargetPlayer();
-
-        if (targetPlayer != null) {
+        if (targetPlayer != null && targetPlayer.getSession().isOpen()) {
             // Send to a specific player
             try {
                 targetPlayer.getSession().sendMessage(new BinaryMessage(flaggedMessage));
