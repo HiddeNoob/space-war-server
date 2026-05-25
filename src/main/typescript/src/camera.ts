@@ -19,20 +19,14 @@ export class Camera {
     minScale: number;
     maxScale: number;
 
-    // Sunucu tick sıçramalarını absorbe eden ara hedef
-    private smoothTargetX: number = 0;
-    private smoothTargetY: number = 0;
     private hasTarget: boolean = false;
 
     constructor(screenWidth: number, screenHeight: number) {
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
-
         this.x = 0;
         this.y = 0;
-
         this.offset = {x: 0, y: 0};
-
         this.scale = 10;
         this.targetScale = 10;
         this.minScale = 5;
@@ -41,41 +35,28 @@ export class Camera {
 
     zoom(deltaY: number): void {
         const zoomSensitivity = 0.1;
-        if (deltaY > 0) {
-            this.targetScale *= (1 - zoomSensitivity);
-        } else {
-            this.targetScale *= (1 + zoomSensitivity);
-        }
+        this.targetScale *= (deltaY > 0) ? (1 - zoomSensitivity) : (1 + zoomSensitivity);
         this.targetScale = Math.max(this.minScale, Math.min(this.maxScale, this.targetScale));
     }
 
-    update(dt: number, targetWorldPos: WorldPos | null): void {
-        const zoomK = 0.002; // zoom yumuşatma hızı
-        const trackK = 0.005; // kameranın smoothed hedefe takip hızı
-        const smoothK = 0.01; // smoothed hedefin sunucu pozisyonuna takip hızı
+    update(dtMs: number, targetWorldPos: WorldPos | null, isLocalPlayer: boolean = false): void {
+        const dt = dtMs / 1000;
+        const trackK = isLocalPlayer ? 5.0 : 15.0; 
+        const zoomK = 5.0;
 
         const zoomFactor = 1 - Math.exp(-zoomK * dt);
         const trackFactor = 1 - Math.exp(-trackK * dt);
-        const smoothFactor = 1 - Math.exp(-smoothK * dt);
 
-        // Zoom
         this.scale += (this.targetScale - this.scale) * zoomFactor;
 
         if (targetWorldPos) {
             if (!this.hasTarget) {
-                // İlk frame: ışınla, lerp etme
-                this.smoothTargetX = targetWorldPos.x;
-                this.smoothTargetY = targetWorldPos.y;
                 this.x = targetWorldPos.x;
                 this.y = targetWorldPos.y;
                 this.hasTarget = true;
             }
-
-            this.smoothTargetX += (targetWorldPos.x - this.smoothTargetX) * smoothFactor;
-            this.smoothTargetY += (targetWorldPos.y - this.smoothTargetY) * smoothFactor;
-
-            this.x += (this.smoothTargetX - this.x) * trackFactor;
-            this.y += (this.smoothTargetY - this.y) * trackFactor;
+            this.x += (targetWorldPos.x - this.x) * trackFactor;
+            this.y += (targetWorldPos.y - this.y) * trackFactor;
         }
 
         this.offset.x = (this.screenWidth / 2) - (this.x * this.scale);
@@ -89,7 +70,7 @@ export class Camera {
         };
     }
 
-    followPlayer(dt: number, playerState: any): void {
+    followPlayer(dt: number, playerState: any, isLocalPlayer: boolean = false): void {
         if (!playerState) return;
 
         let targetPos: WorldPos | undefined;
@@ -110,6 +91,6 @@ export class Camera {
             targetPos = {x: sumX / totalPoints, y: sumY / totalPoints};
         }
 
-        this.update(dt, targetPos ?? null);
+        this.update(dt, targetPos ?? null, isLocalPlayer);
     }
 }

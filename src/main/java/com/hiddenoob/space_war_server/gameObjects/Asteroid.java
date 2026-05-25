@@ -7,8 +7,11 @@ import com.hiddenoob.Math.Vector2;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class Asteroid implements Cloneable {
+    private static final AtomicLong idCounter = new AtomicLong(0);
+    private final long id;
     private final PhysicsBody physics;
     private Polygon<BreakableLine> shape;
 
@@ -17,8 +20,11 @@ public class Asteroid implements Cloneable {
     }
 
     public Asteroid(PhysicsBody body, Polygon<BreakableLine> shape) {
-        // Ensure that the incoming body and shape are cloned if they are not already
-        // This constructor is used internally for cloning, so we assume the inputs are already cloned or new instances.
+        this(idCounter.getAndIncrement(), body, shape);
+    }
+
+    private Asteroid(long id, PhysicsBody body, Polygon<BreakableLine> shape) {
+        this.id = id;
         this.physics = body;
         this.setShape(shape);
     }
@@ -27,6 +33,11 @@ public class Asteroid implements Cloneable {
         this(new PhysicsBody(position, 1.0, 1.0),
                 PolygonBuilder.BREAKABLE_LINE_BUILDER.regularPolygon(3, 1)
         );
+    }
+
+
+    public long getId() {
+        return id;
     }
 
 
@@ -80,13 +91,9 @@ public class Asteroid implements Cloneable {
     @Override
     public Asteroid clone() {
         try {
-            // Perform a shallow copy first
-            // Asteroid cloned = (Asteroid) super.clone(); // This won't work directly due to final physics field
-
             // Deep copy by creating a new instance and cloning mutable fields
-            // The constructor Asteroid(PhysicsBody body, Polygon<BreakableLine> shape) is suitable for this.
-            return new Asteroid(this.physics.clone(), this.shape.clone());
-        } catch (Exception e) { // Catching generic Exception for simplicity, but CloneNotSupportedException is expected
+            return new Asteroid(this.id, this.physics.clone(), this.shape.clone());
+        } catch (Exception e) {
             throw new InternalError(e);
         }
     }

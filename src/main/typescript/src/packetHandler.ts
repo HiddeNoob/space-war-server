@@ -35,6 +35,7 @@ export class PacketHandler {
         this.decoders.set(PacketType.STRING, this.decodeStringPacket.bind(this));
         this.decoders.set(PacketType.WORLD_STATE, this.decodeWorldStatePacket.bind(this));
         this.decoders.set(PacketType.PLAYER_STATE, this.decodePlayerStatePacket.bind(this));
+        this.decoders.set(PacketType.ENTITY_STATE, this.decodeEntityStatePacket.bind(this));
     }
 
     private handleIncomingData(buffer: ArrayBuffer): void {
@@ -154,10 +155,17 @@ export class PacketHandler {
     }
 
     decodePlayerStatePacket(dataView: DataView, offset: number): { decodedObject: any; newOffset: number } {
+        const id = Number(dataView.getBigInt64(offset, false));
+        offset += 8;
         const { decodedObject: position, newOffset: offset1 } = this._decodePacketInternal(dataView, offset);
-        const rotation = dataView.getFloat32(offset1, false);
-        const { decodedObject: polygon, newOffset: offset2 } = this._decodePacketInternal(dataView, offset1 + 4);
-        return { decodedObject: { position, rotation, polygon }, newOffset: offset2 };
+        const { decodedObject: velocity, newOffset: offset2 } = this._decodePacketInternal(dataView, offset1);
+        const rotation = dataView.getFloat32(offset2, false);
+        const { decodedObject: polygon, newOffset: offset3 } = this._decodePacketInternal(dataView, offset2 + 4);
+        return { decodedObject: { id, position, velocity, rotation, polygon }, newOffset: offset3 };
+    }
+
+    decodeEntityStatePacket(dataView: DataView, offset: number): { decodedObject: any; newOffset: number } {
+        return this.decodePlayerStatePacket(dataView, offset);
     }
 
     decodeWorldStatePacket(dataView: DataView, offset: number): { decodedObject: any; newOffset: number } {

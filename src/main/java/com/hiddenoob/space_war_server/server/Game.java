@@ -57,24 +57,26 @@ public class Game implements SmartLifecycle {
                 gameMap.updateObjectPosition(player, oldX, oldY);
 
                 Vector2 playerPos = player.getPosition();
-                List<Polygon<BreakableLine>> nearAstreoids = new ArrayList<>();
+                List<com.hiddenoob.space_war_server.gameObjects.Asteroid> nearObjects = new ArrayList<>();
                 gameMap.forEachInRange(playerPos.x - SEARCH_RANGE,
                         playerPos.x + SEARCH_RANGE, playerPos.y - SEARCH_RANGE,
                         playerPos.y + SEARCH_RANGE,
                         asteroid -> {
                             if (asteroid != player) {
-                                nearAstreoids.add(asteroid.getActualPolygon());
+                                nearObjects.add(asteroid);
                             }
                         });
 
                 eventPublisher.publishEvent(new SendMessageEvent(this,
                         new WorldStatePacket(
                                 new PlayerStatePacket(
+                                        player.getId(),
                                         PacketMapper.toPacket(player.getPosition()),
+                                        PacketMapper.toPacket(player.getPhysics().getVelocity()),
                                         (float) player.getPhysics().getRotation(),
                                         PacketMapper.toPacket(player.getActualPolygon())
                                 ),
-                                PacketMapper.toPolygonPacketList(nearAstreoids)
+                                PacketMapper.toEntityStatePacketList(nearObjects)
                         ).toArray(),
                         player
                 ));

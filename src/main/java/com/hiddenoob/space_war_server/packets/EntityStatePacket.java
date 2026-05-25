@@ -2,14 +2,14 @@ package com.hiddenoob.space_war_server.packets;
 
 import java.nio.ByteBuffer;
 
-public class PlayerStatePacket extends Packet {
+public class EntityStatePacket extends Packet {
     private final long id;
     private final Vector2Packet position;
     private final Vector2Packet velocity;
     private final float rotation;
     private final PolygonPacket polygon;
 
-    public PlayerStatePacket(long id, Vector2Packet position, Vector2Packet velocity, float rotation, PolygonPacket polygon) {
+    public EntityStatePacket(long id, Vector2Packet position, Vector2Packet velocity, float rotation, PolygonPacket polygon) {
         this.id = id;
         this.position = position;
         this.velocity = velocity;
@@ -19,7 +19,7 @@ public class PlayerStatePacket extends Packet {
 
     @Override
     public PacketType getPacketType() {
-        return PacketType.PLAYER_STATE;
+        return PacketType.ENTITY_STATE;
     }
 
     @Override
@@ -36,14 +36,14 @@ public class PlayerStatePacket extends Packet {
         polygon.exportPacketToBuffer(buffer);
     }
 
-    public static PlayerStatePacket decode(ByteBuffer buffer) {
+    public static EntityStatePacket decode(ByteBuffer buffer) {
         buffer.getInt(); // bodySize
         long id = buffer.getLong();
         Vector2Packet position = (Vector2Packet) PacketMapper.fromBuffer(buffer);
         Vector2Packet velocity = (Vector2Packet) PacketMapper.fromBuffer(buffer);
         float rotation = buffer.getFloat();
         PolygonPacket polygon = (PolygonPacket) PacketMapper.fromBuffer(buffer);
-        return new PlayerStatePacket(id, position, velocity, rotation, polygon);
+        return new EntityStatePacket(id, position, velocity, rotation, polygon);
     }
 
     public long getId() {

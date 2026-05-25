@@ -10,7 +10,8 @@ export enum PacketType {
     UNIFORM_ARRAY = 8,
     ACTION = 9,
     WORLD_STATE = 10,
-    PLAYER_STATE = 11
+    PLAYER_STATE = 11,
+    ENTITY_STATE = 12
 }
 
 export interface Vector2Packet {
@@ -42,14 +43,24 @@ export interface StringPacket {
 }
 
 export interface PlayerState {
-    position: { x: number; y: number };
+    id: number;
+    position: Vector2Packet;
+    velocity: Vector2Packet;
+    rotation: number;
+    polygon: any[];
+}
+
+export interface EntityState {
+    id: number;
+    position: Vector2Packet;
+    velocity: Vector2Packet;
     rotation: number;
     polygon: any[];
 }
 
 export interface WorldState {
     localPlayer: PlayerState;
-    nearObjects: any[][];
+    nearObjects: EntityState[];
 }
 
 export enum ActionType {

@@ -4,6 +4,7 @@ import com.hiddenoob.Math.Lines.BreakableLine;
 import com.hiddenoob.Math.Lines.Line;
 import com.hiddenoob.Math.Polygons.Polygon;
 import com.hiddenoob.Math.Vector2;
+import com.hiddenoob.space_war_server.gameObjects.Asteroid;
 import com.hiddenoob.space_war_server.packets.action.ActionPacket;
 
 import java.lang.reflect.Array;
@@ -33,6 +34,7 @@ public class PacketMapper {
             case ACTION -> ActionPacket.decode(buffer);
             case WORLD_STATE -> WorldStatePacket.decode(buffer);
             case PLAYER_STATE -> PlayerStatePacket.decode(buffer);
+            case ENTITY_STATE -> EntityStatePacket.decode(buffer);
             default ->
                     throw new IllegalArgumentException("Unknown packet type: "
                             + type);
@@ -50,6 +52,16 @@ public class PacketMapper {
 
     public static Vector2Packet toPacket(Vector2 vector) {
         return new Vector2Packet((float) vector.x, (float) vector.y);
+    }
+
+    public static EntityStatePacket toEntityStatePacket(Asteroid asteroid) {
+        return new EntityStatePacket(
+                asteroid.getId(),
+                toPacket(asteroid.getPosition()),
+                toPacket(asteroid.getPhysics().getVelocity()),
+                (float) asteroid.getPhysics().getRotation(),
+                toPacket(asteroid.getActualPolygon())
+        );
     }
 
     public static LinePacket toPacket(Line line) {
@@ -103,6 +115,14 @@ public class PacketMapper {
                 .map(PacketMapper::toPacket)
                 .toList();
         return new ListPacket(packets.toArray(new PolygonPacket[0]));
+    }
+
+    public static ListPacket toEntityStatePacketList(
+            List<Asteroid> asteroids) {
+        List<EntityStatePacket> packets = asteroids.stream()
+                .map(PacketMapper::toEntityStatePacket)
+                .toList();
+        return new ListPacket(packets.toArray(new EntityStatePacket[0]));
     }
 
     public static ListPacket toStringPacketList(List<String> strings) {

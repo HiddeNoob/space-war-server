@@ -41,19 +41,19 @@ export function setupInputListeners(): void {
     });
 }
 
-export function createActionPacket(): ActionPacket {
-    let dx = 0;
-    let dy = 0;
+export function getMoveDirection(): { dx: number; dy: number } {
+    let dx = 0, dy = 0;
     if (InputState.keys.w) dy -= 1;
     if (InputState.keys.s) dy += 1;
     if (InputState.keys.a) dx -= 1;
     if (InputState.keys.d) dx += 1;
 
-    const length = Math.sqrt(dx * dx + dy * dy);
-    if (length > 0) {
-        dx /= length;
-        dy /= length;
-    }
+    const len = Math.sqrt(dx * dx + dy * dy);
+    return len > 0 ? { dx: dx / len, dy: dy / len } : { dx: 0, dy: 0 };
+}
+
+export function createActionPacket(): ActionPacket {
+    const { dx, dy } = getMoveDirection();
     const force: ForceActionData | null = (dx !== 0 || dy !== 0) ? { dx, dy } : null;
 
     const centerX = window.innerWidth / 2;

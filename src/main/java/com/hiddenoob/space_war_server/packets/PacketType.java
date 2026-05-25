@@ -12,7 +12,8 @@ public enum PacketType {
     UNIFORM_ARRAY((byte) 8),
     ACTION((byte) 9),
     WORLD_STATE((byte) 10),
-    PLAYER_STATE((byte) 11);
+    PLAYER_STATE((byte) 11),
+    ENTITY_STATE((byte) 12);
 
     private final byte id;
 
