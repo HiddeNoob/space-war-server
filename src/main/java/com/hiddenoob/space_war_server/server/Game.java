@@ -53,7 +53,7 @@ public class Game implements SmartLifecycle {
             players.forEach((player) -> {
                 double oldX = player.getPosition().x;
                 double oldY = player.getPosition().y;
-                player.getPhysics().update(TICK_RATE / 1000.0);
+                player.getPhysics().update(1.0 / TICK_RATE);
                 gameMap.updateObjectPosition(player, oldX, oldY);
 
                 Vector2 playerPos = player.getPosition();

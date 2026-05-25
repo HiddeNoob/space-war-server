@@ -5,7 +5,7 @@
   "description": "TypeScript sources for the Space War web client. Compiled by Maven into target/classes/static/scripts/.",
   "scripts": {
     "build": "esbuild src/main.ts --bundle --outfile=../resources/static/scripts/main.js --format=esm && cp index.html ../resources/static/index.html",
-    "watch": "esbuild src/main.ts --bundle --outfile=../resources/static/scripts/main.js --format=esm --watch"
+    "watch": "esbuild src/main.ts --bundle --outfile=../../../target/classes/static/scripts/main.js --format=esm --watch"
   },
   "devDependencies": {
     "esbuild": "^0.28.0",

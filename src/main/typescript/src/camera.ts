@@ -19,6 +19,11 @@ export class Camera {
     minScale: number;
     maxScale: number;
 
+    // Sunucu tick sıçramalarını absorbe eden ara hedef
+    private smoothTargetX: number = 0;
+    private smoothTargetY: number = 0;
+    private hasTarget: boolean = false;
+
     constructor(screenWidth: number, screenHeight: number) {
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
@@ -45,13 +50,32 @@ export class Camera {
     }
 
     update(dt: number, targetWorldPos: WorldPos | null): void {
-        const zoomLerpSpeed = 0.005;
-        this.scale += (this.targetScale - this.scale) * zoomLerpSpeed * dt;
+        const zoomK = 0.002; // zoom yumuşatma hızı
+        const trackK = 0.005; // kameranın smoothed hedefe takip hızı
+        const smoothK = 0.01; // smoothed hedefin sunucu pozisyonuna takip hızı
+
+        const zoomFactor = 1 - Math.exp(-zoomK * dt);
+        const trackFactor = 1 - Math.exp(-trackK * dt);
+        const smoothFactor = 1 - Math.exp(-smoothK * dt);
+
+        // Zoom
+        this.scale += (this.targetScale - this.scale) * zoomFactor;
 
         if (targetWorldPos) {
-            const moveLerpSpeed = 0.005;
-            this.x += (targetWorldPos.x - this.x) * moveLerpSpeed * dt;
-            this.y += (targetWorldPos.y - this.y) * moveLerpSpeed * dt;
+            if (!this.hasTarget) {
+                // İlk frame: ışınla, lerp etme
+                this.smoothTargetX = targetWorldPos.x;
+                this.smoothTargetY = targetWorldPos.y;
+                this.x = targetWorldPos.x;
+                this.y = targetWorldPos.y;
+                this.hasTarget = true;
+            }
+
+            this.smoothTargetX += (targetWorldPos.x - this.smoothTargetX) * smoothFactor;
+            this.smoothTargetY += (targetWorldPos.y - this.smoothTargetY) * smoothFactor;
+
+            this.x += (this.smoothTargetX - this.x) * trackFactor;
+            this.y += (this.smoothTargetY - this.y) * trackFactor;
         }
 
         this.offset.x = (this.screenWidth / 2) - (this.x * this.scale);
@@ -61,14 +85,15 @@ export class Camera {
     worldToScreen(worldX: number, worldY: number): ScreenPos {
         return {
             x: (worldX * this.scale) + this.offset.x,
-            y: (worldY * this.scale) + this.offset.y
+            y: (worldY * this.scale) + this.offset.y,
         };
     }
 
     followPlayer(dt: number, playerState: any): void {
         if (!playerState) return;
 
-        let targetPos;
+        let targetPos: WorldPos | undefined;
+
         if (playerState.position) {
             targetPos = playerState.position;
         } else {
@@ -85,6 +110,6 @@ export class Camera {
             targetPos = {x: sumX / totalPoints, y: sumY / totalPoints};
         }
 
-        this.update(dt, targetPos);
+        this.update(dt, targetPos ?? null);
     }
 }
