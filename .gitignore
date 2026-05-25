@@ -34,3 +34,5 @@ build/
 
 ### Frontend (TypeScript) ###
 src/main/typescript/node_modules/
+
+*:Zone.Identifier
